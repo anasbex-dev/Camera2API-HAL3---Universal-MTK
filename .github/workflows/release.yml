@@ -43,6 +43,16 @@ jobs:
           -x ".git/*" \
           -x ".github/*"
 
+      - name: Create and push Git Tag
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${GITHUB_REPOSITORY}.git
+          git tag ${{ steps.bump.outputs.new }}
+          git push origin ${{ steps.bump.outputs.new }}
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -50,4 +60,4 @@ jobs:
           name: Release ${{ steps.bump.outputs.new }}
           files: Camera2API-MTK.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
