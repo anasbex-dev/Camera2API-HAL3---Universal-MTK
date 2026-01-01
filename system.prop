@@ -1,0 +1,9 @@
+persist.vendor.camera.HAL3.enabled=1
+ro.vendor.camera.HAL3.enabled=1
+persist.camera.HAL3.enabled=1
+camera.hal3.enabled=1
+
+persist.vendor.camera.eis.enable=1
+persist.vendor.camera.is_mode=4
+persist.vendor.camera.enableBusDC=1
+persist.vendor.camera.stats.test=5

@@ -1,0 +1,7 @@
+id=camera2api_mtk_universal
+name=Camera2API HAL3 Enabler - Universal MTK (Aggressive)
+version=1.1.0
+versionCode=3
+author=AnasBex
+description=Force enable Camera2API HAL3 + EIS with daemon for all Mediatek devices (AOSP, OneUI, MIUI, RealmeUI, etc)
+minMagisk=1900
