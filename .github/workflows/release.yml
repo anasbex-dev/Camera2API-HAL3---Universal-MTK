@@ -4,13 +4,14 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -21,7 +22,7 @@ jobs:
           TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
           echo "current=$TAG" >> $GITHUB_OUTPUT
 
-      - name: Auto bump version (Patch)
+      - name: Auto bump patch version
         id: bump
         run: |
           OLD=${{ steps.tag.outputs.current }}
@@ -31,30 +32,36 @@ jobs:
           PATCH=$((PATCH + 1))
 
           NEW="v$MAJOR.$MINOR.$PATCH"
-
           echo "new=$NEW" >> $GITHUB_OUTPUT
 
-      - name: Show Version
+      - name: Show version info
         run: |
           echo "Current Version: ${{ steps.tag.outputs.current }}"
           echo "New Version: ${{ steps.bump.outputs.new }}"
 
-      - name: Create ZIP
+      - name: Build module ZIP
         run: |
-          zip -r MTK-Camera2API-Pro.zip . \
+          zip -r Camera2API-MTK.zip . \
           -x ".git/*" \
           -x ".github/*"
 
-      - name: Create Git Tag
+      # Push Git Tag using GITHUB_TOKEN
+      - name: Create and push Git tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
           git tag ${{ steps.bump.outputs.new }}
           git push origin ${{ steps.bump.outputs.new }}
 
-      - name: Create Release
+      # Create GitHub Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.bump.outputs.new }}
           name: Release ${{ steps.bump.outputs.new }}
-          files: MTK-Camera2API-Pro.zip
+          files: Camera2API-MTK.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
