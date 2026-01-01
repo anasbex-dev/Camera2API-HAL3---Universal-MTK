@@ -27,10 +27,8 @@ jobs:
         run: |
           OLD=${{ steps.tag.outputs.current }}
           OLD=${OLD#v}
-
           IFS='.' read -r MAJOR MINOR PATCH <<< "$OLD"
           PATCH=$((PATCH + 1))
-
           NEW="v$MAJOR.$MINOR.$PATCH"
           echo "new=$NEW" >> $GITHUB_OUTPUT
 
@@ -45,18 +43,6 @@ jobs:
           -x ".git/*" \
           -x ".github/*"
 
-      # Push Git Tag using GITHUB_TOKEN
-      - name: Create and push Git tag
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-          git tag ${{ steps.bump.outputs.new }}
-          git push origin ${{ steps.bump.outputs.new }}
-
-      # Create GitHub Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
