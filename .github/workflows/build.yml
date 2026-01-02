@@ -36,18 +36,16 @@ jobs:
 
       - name: Create Module Structure
         run: |
-          # Buat folder untuk module
+          # HANYA buat folder META-INF
           mkdir -p META-INF/com/google/android
           
-          # Salin SEMUA file yang diperlukan (termasuk README.md dan LICENSE)
-          echo "=== Copying all required files ==="
-          cp -v module.prop ./
-          cp -v post-fs-data.sh ./
-          cp -v service.sh ./
-          cp -v system.prop ./
-          cp -v permission_trigger.sh ./
-          cp -v README.md ./
-          cp -v LICENSE ./
+          echo "=== Preparing module structure ==="
+          echo "Current directory: $(pwd)"
+          echo "Files in directory:"
+          ls -la
+          
+          # HAPUS baris cp -v module.prop ./ dst...
+          # File-file sudah ada di tempatnya
           
           # Buat updater-script untuk Magisk
           cat > META-INF/com/google/android/updater-script << 'EOF'
@@ -115,8 +113,6 @@ jobs:
           # List files untuk verifikasi
           echo "=== Final file structure ==="
           find . -type f | sort
-          echo "=== File sizes ==="
-          ls -lh *.md *.prop *.sh LICENSE 2>/dev/null || true
 
       - name: Build Module ZIP
         run: |
@@ -125,26 +121,26 @@ jobs:
           ZIP_NAME="Camera2API-MTK-v${VERSION}.zip"
           
           echo "=== Creating ZIP: ${ZIP_NAME} ==="
+          echo "Files to be included:"
+          find . -type f ! -path "./.git/*" ! -path "./.github/*" | sort
           
-          # Buat ZIP dengan kompresi level 9 (standard untuk Magisk)
-          # INCLUDE SEMUA FILE termasuk README.md dan LICENSE
-          zip -r9 "../${ZIP_NAME}" . \
+          # Buat ZIP dengan kompresi level 9
+          # Termasuk SEMUA file di current directory
+          zip -r9 "${ZIP_NAME}" . \
             -x ".git/*" \
             -x ".github/*" \
             -x "*.tmp" \
-            -x "*.log"
-          
-          # Pindah ke root directory
-          mv "../${ZIP_NAME}" .
+            -x "*.log" \
+            -x "${ZIP_NAME}"  # Hindari include diri sendiri
           
           echo "=== ZIP created successfully ==="
           echo "ZIP file: ${ZIP_NAME}"
           echo "File size:"
-          ls -lh *.zip
+          ls -lh "${ZIP_NAME}"
           
           # Tampilkan isi ZIP untuk verifikasi
-          echo "=== Contents of ZIP ==="
-          unzip -l "*.zip" | head -20
+          echo "=== Contents of ZIP (first 30 files) ==="
+          unzip -l "${ZIP_NAME}" | head -35
 
       - name: Upload Module as Artifact (Optional)
         uses: actions/upload-artifact@v4
@@ -161,12 +157,12 @@ jobs:
           body: |
             ## Camera2API HAL3 - Universal MTK
             
-            ### Release Info
+            ###  Release Info
             - **Version**: ${{ steps.setver.outputs.version }}
             - **Build Date**: $(date +'%Y-%m-%d %H:%M:%S')
             - **Module ID**: camera2api_mtk
             
-            ### Included Files
+            ###  Included Files
             - `module.prop` - Module properties
             - `system.prop` - System properties
             - `post-fs-data.sh` - Post-fs-data script
@@ -175,14 +171,14 @@ jobs:
             - `README.md` - Documentation
             - `LICENSE` - Apache 2.0 License
             
-            ### Installation
+            ###  Installation
             1. Download the ZIP file below
             2. Open Magisk Manager
             3. Go to Modules → Install from storage
             4. Select the downloaded ZIP
             5. Reboot your device
             
-            ### Features
+            ###  Features
             - Enables Camera2API on MTK devices
             - Enables HAL3 camera support
             - Universal MediaTek compatibility
